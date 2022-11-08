@@ -150,32 +150,46 @@ int main(int argc, char **argv) {
     short moves = 0;
     // create robot object
     struct Robot robot;
-    robot.x = 0;
-    robot.y = 1;
-    robot.direction = 90;
 
     if (argc == 4) {
         robot.x = atoi(argv[1]);
         robot.y = atoi(argv[2]);
         robot.direction = atoi(argv[3]);
+    } else {
+        robot.x = 0;
+        robot.y = 1;
+        robot.direction = 90;
     }
 
     updateAnimation(robot);
     while (atMarker(robot) != 1)
         {
-        if (canMoveForward(robot)) {
-            forward(&robot);
-            }
-        int randDirection = rand() % 3;
-        if (randDirection == 0) {
+        // Check for left wall
             left(&robot);
-        } else if (randDirection == 1) {
-            right(&robot);
+            if (canMoveForward(robot)) {
+                forward(&robot);
+            } else {
+                // Check for front wall
+                right(&robot);
+                if (canMoveForward(robot)) {
+                    forward(&robot);
+                } else {
+                    // Check for right wall
+                    right(&robot);
+                    if (canMoveForward(robot)) {
+                        forward(&robot);
+                    } else {
+                        // Do a U-turn
+                        right(&robot);
+                        forward(&robot);
+                    }
+                }
+            }
+            updateAnimation(robot);
+            sleep(250);
+            moves++;
         }
-        // sleep(250);
-        updateAnimation(robot);
-        moves++;
-        }
+        
         
     printf("Total Moves: %i\n", moves);
     }
