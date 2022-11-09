@@ -5,8 +5,9 @@
 
 ///////// Maze ////////
 
+const short PIXEL_SIZE = 20;
+
 const short MAZE_SIZE = 11;
-const short PIXEL_SIZE = 50;
 
 const short maze[MAZE_SIZE][MAZE_SIZE] = {
     {1,1,1,1,1,1,1,1,1,1,1},
@@ -25,16 +26,32 @@ const short maze[MAZE_SIZE][MAZE_SIZE] = {
 void drawMazePixel(int row, int column, int pixelType) {
     int x_location = (PIXEL_SIZE * row);
     int y_location = (PIXEL_SIZE * column);
-    if (pixelType == 0) {
-        drawRect(x_location, y_location, PIXEL_SIZE, PIXEL_SIZE);
-    } else if (pixelType == 1) {
-        fillRect(x_location, y_location, PIXEL_SIZE, PIXEL_SIZE);
-    } else {
-        setColour(gray);
-        fillRect(x_location, y_location, PIXEL_SIZE, PIXEL_SIZE);
-        setColour(black);
-    }
+    switch (pixelType) {
+        case 0:
+            drawRect(x_location, y_location, PIXEL_SIZE, PIXEL_SIZE);
+            break;
         
+        case 1:
+            fillRect(x_location, y_location, PIXEL_SIZE, PIXEL_SIZE);
+            break;
+
+        case 2:
+            setColour(gray);
+            fillRect(x_location, y_location, PIXEL_SIZE, PIXEL_SIZE);
+            setColour(black);
+            break;
+
+    }
+}
+
+void drawMaze() {
+        for (int column = 0; column < MAZE_SIZE; column++) 
+    {
+        for (int row = 0; row < MAZE_SIZE; row++) 
+        {
+            drawMazePixel(row, column, maze[column][row]);
+        }
+    }
 }
 
 /////// Robot ///////
@@ -42,66 +59,80 @@ void drawMazePixel(int row, int column, int pixelType) {
 struct Robot {
     short x;
     short y;
-    short direction;
+    short heading;
 };
 
-void updateAnimation(struct Robot robot) {
+void redrawRobot(struct Robot robot) {
     clear();
+    int * xPoints, * yPoints;
 
-    if (robot.direction == 90) {
-        int xPoints[] = {PIXEL_SIZE * robot.x, PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1)};
-        int yPoints[] = {PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1), (PIXEL_SIZE * robot.y) + PIXEL_SIZE/2};
-        fillPolygon(3, xPoints, yPoints);
-    } else
-    if (robot.direction == 0) {
-        int xPoints[] = {(PIXEL_SIZE * robot.x) + PIXEL_SIZE/2, PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1)};
-        int yPoints[] = {PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1), (PIXEL_SIZE * (robot.y + 1))};
-        fillPolygon(3, xPoints, yPoints);
-    } else
-        if (robot.direction == 180) {
-        int xPoints[] = {PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1), (PIXEL_SIZE * robot.x) + PIXEL_SIZE/2};
-        int yPoints[] = {PIXEL_SIZE * robot.y, PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1)};
-        fillPolygon(3, xPoints, yPoints);
-    } else
-        if (robot.direction == 270) {
-        int xPoints[] = {PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1), PIXEL_SIZE * (robot.x + 1)};
-        int yPoints[] = {(PIXEL_SIZE * robot.y) + PIXEL_SIZE/2, PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1)};
-        fillPolygon(3, xPoints, yPoints);
+    switch (robot.heading) {
+        case 0:
+            xPoints = (int[3]){(PIXEL_SIZE * robot.x) + PIXEL_SIZE/2, PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1)};
+            yPoints = (int[3]){PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1), (PIXEL_SIZE * (robot.y + 1))};
+            break;
+        
+        case 90:
+            xPoints = (int[3]){PIXEL_SIZE * robot.x, PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1)};
+            yPoints = (int[3]){PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1), (PIXEL_SIZE * robot.y) + PIXEL_SIZE/2};
+            break;
+
+        case 180:
+            xPoints = (int[3]){PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1), (PIXEL_SIZE * robot.x) + PIXEL_SIZE/2};
+            yPoints = (int[3]){PIXEL_SIZE * robot.y, PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1)};
+            break;
+
+        case 270:
+            xPoints = (int[3]){PIXEL_SIZE * robot.x, PIXEL_SIZE * (robot.x + 1), PIXEL_SIZE * (robot.x + 1)};
+            yPoints = (int[3]){(PIXEL_SIZE * robot.y) + PIXEL_SIZE/2, PIXEL_SIZE * robot.y, PIXEL_SIZE * (robot.y + 1)};
+            break;
     }
+    fillPolygon(3, xPoints, yPoints);
 
 }
 
 void forward(struct Robot *robot){
-    if (robot->direction == 0) {
-        robot->y--;
-    } else if (robot->direction == 90) {
-        robot->x++;
-    } else if (robot->direction == 180) {
-        robot->y++;
-    } else if (robot->direction == 270) {
-        robot->x--;
+    switch (robot->heading) {     
+        case 0:
+            robot->y--;
+            break;
+
+        case 90:
+            robot->x++;
+            break;
+
+        case 180:
+            robot->y++;
+            break;
+
+        case 270:
+            robot->x--;
+            break;
     }
 }
 
 void left(struct Robot *robot) {
-    if (robot->direction == 0) {
-        robot->direction = 270;
+    if (robot->heading == 0) 
+    {
+        robot->heading = 270;
     } else {
-        robot->direction -= 90;
+        robot->heading -= 90;
     }
 }
 
 void right(struct Robot *robot) {
-    if (robot->direction == 270) {
-        robot->direction = 0;
+    if (robot->heading == 270) 
+    {
+        robot->heading = 0;
     } else {
-        robot->direction += 90;
+        robot->heading += 90;
     }
 }
 
 short atMarker(struct Robot robot) {
     short currentLocation = maze[robot.y][robot.x];
-    if (currentLocation == 2) {
+    if (currentLocation == 2) 
+    {
         return 1;
     } else {
         return 0;
@@ -110,86 +141,87 @@ short atMarker(struct Robot robot) {
 
 short canMoveForward(struct Robot robot) {
     short forwardLocation;
-    if (robot.direction == 0)
+    switch (robot.heading)
     {
-        forwardLocation = maze[robot.y - 1][robot.x];
+        case 0:
+            forwardLocation = maze[robot.y - 1][robot.x];
+            break;
+
+        case 90:
+            forwardLocation = maze[robot.y][robot.x + 1];
+            break;
+
+        case 180:
+            forwardLocation = maze[robot.y + 1][robot.x];
+            break;
+
+        case 270:
+            forwardLocation = maze[robot.y][robot.x - 1];
+            break;
     }
-    else if (robot.direction == 90) {
-        forwardLocation = maze[robot.y][robot.x + 1];
-    }
-    else if (robot.direction == 180) {
-        forwardLocation = maze[robot.y + 1][robot.x];
-    }
-    else if (robot.direction == 270) {
-        forwardLocation = maze[robot.y][robot.x - 1];
-    }
-    if (forwardLocation == 1) {
+    if (forwardLocation == 1)
+    {
         return 0;
     } else {
         return 1;
     }
-
 }
+
+////// Maze Search - Wall Follower //////
+
+void checkWall_recur(struct Robot * robot_ptr) {
+    if (canMoveForward(*robot_ptr)) 
+        {
+            forward(robot_ptr);
+        } else {
+            right(robot_ptr);
+            checkWall_recur(robot_ptr);
+        }
+}
+
+void moveFollowingWall(struct Robot * robot_ptr) {
+        // Check for left -> front -> right wall, if no wall, move forward
+        left(robot_ptr);
+        checkWall_recur(robot_ptr);
+}
+
+
 
 int main(int argc, char **argv) {
     setWindowSize(MAZE_SIZE*PIXEL_SIZE, MAZE_SIZE*PIXEL_SIZE);
+
     background();
 
-    // draw maze
-    for (int column = 0; column < MAZE_SIZE; column++) {
-        for (int row = 0; row < MAZE_SIZE; row++) {
-            drawMazePixel(row, column, maze[column][row]);
-        }
-    }
-
-
-
+    drawMaze();
 
     foreground();
     setColour(green);
-    short moves = 0;
-    // create robot object
+    
+    // Pre-set Robot
     struct Robot robot;
 
-    if (argc == 4) {
+    if (argc == 4) 
+    {
         robot.x = atoi(argv[1]);
         robot.y = atoi(argv[2]);
-        robot.direction = atoi(argv[3]);
+        robot.heading = atoi(argv[3]);
     } else {
         robot.x = 0;
         robot.y = 1;
-        robot.direction = 90;
+        robot.heading = 90;
     }
+    // Draw Robot
+    redrawRobot(robot);
 
-    updateAnimation(robot);
+    short totalMoves = 0;
+
     while (atMarker(robot) != 1)
         {
-        // Check for left wall
-            left(&robot);
-            if (canMoveForward(robot)) {
-                forward(&robot);
-            } else {
-                // Check for front wall
-                right(&robot);
-                if (canMoveForward(robot)) {
-                    forward(&robot);
-                } else {
-                    // Check for right wall
-                    right(&robot);
-                    if (canMoveForward(robot)) {
-                        forward(&robot);
-                    } else {
-                        // Do a U-turn
-                        right(&robot);
-                        forward(&robot);
-                    }
-                }
-            }
-            updateAnimation(robot);
+            moveFollowingWall(&robot);
+            redrawRobot(robot);
             sleep(250);
-            moves++;
+            totalMoves++;
         }
         
-        
-    printf("Total Moves: %i\n", moves);
+    printf("Total Moves: %i\n", totalMoves);
     }
